@@ -10,4 +10,5 @@ class Result:
         self.notes = notes
 
     def __str__(self) -> str:
-        return self.assignment + ", " + ("Pass" if self.result else "Fail") + ", " + self.notes
+        return self.assignment + ", " + (
+            "\033[92mPass\033[0m" if self.result else "\033[91mFail\033[0m") + ", " + self.notes
