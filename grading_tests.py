@@ -34,6 +34,15 @@ class GradingTests:
                                       "Our db count was: " + str(all_db_count)
                                       + ". Your service returned: " + str(mapped_json_count)))
 
+            mapped_json = json.loads(r.content)
+            results.append(Result(True, assignment, "All returned entities were tweets"))
+            for single in mapped_json:
+                if "id_str" not in single:
+                    results.pop()
+                    results.append(
+                        Result(False, assignment, "Not all returned entities were tweets. Field id_str missing"))
+                    break
+
         except requests.exceptions.RequestException as e:
             logger.warn(e)
             results.append(Result(False, assignment, e))
