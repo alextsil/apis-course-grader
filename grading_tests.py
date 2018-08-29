@@ -150,6 +150,52 @@ class GradingTests:
 
         return results
 
+    def delete_all_with_hashtag(self):
+        results = []
+        hashtag = 'tsikos'
+        assignment = 'Delete request on /tweets/hashtag/{tag} using tag "' + hashtag + '"'
+
+        try:
+            # req me troll hashtag. must return 0
+            init_db_count = db.find_with_hashtags(hashtag).count()
+            r = requests.delete(Settings.ws_conn_string + '/tweets/hashtag/' + hashtag)
+
+            if r.status_code == 200:
+                results.append(Result(True, assignment, "Status code was 200"))
+            else:
+                results.append(Result(False, assignment, "Status code was not 200. Was " + str(r.status_code)))
+
+            after_db_count = db.find_with_hashtags(hashtag).count()
+
+            if init_db_count == after_db_count:
+                results.append(Result(True, assignment + ' count db',
+                                      'Your service correctly did not delete any records'))
+            else:
+                results.append(Result(False, assignment + ' count db',
+                                      'Your service mistakenly deleted some records'))
+
+            # delete me kalo tag
+            hashtag = 'earth'
+            init_db_count = db.find_with_hashtags(hashtag).count()
+
+            r = requests.delete(Settings.ws_conn_string + '/tweets/hashtag/' + hashtag)
+            removed_count = r.json()['removedCount']
+            after_db_count = db.find_with_hashtags(hashtag).count()
+            if init_db_count - removed_count == after_db_count:
+                results.append(Result(True, assignment + ' count db',
+                                      'Your service correctly deleted ' + str(removed_count) + ' records'))
+            else:
+                results.append(Result(False, assignment + ' count db',
+                                      'Your service reported '
+                                      + str(removed_count) + ' deletions but actual was: '
+                                      + str(int(init_db_count - after_db_count))))
+
+        except requests.exceptions.RequestException as e:
+            logger.warn(e)
+            results.append(Result(False, assignment, e))
+
+        return results
+
     def get_full_tweet_text(self, tweet_map):
         text = ""
         if "extended_tweet" in tweet_map:
