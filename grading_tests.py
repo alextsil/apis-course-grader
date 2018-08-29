@@ -102,6 +102,54 @@ class GradingTests:
 
         return results
 
+    def get_all_with_hashtag(self):
+        results = []
+        hashtag = 'plastic'
+        assignment = 'Get request on /tweets/hashtag/{tag} using tag "' + hashtag + '"'
+
+        try:
+            r = requests.get(Settings.ws_conn_string + '/tweets/hashtag/' + hashtag)
+
+            if r.status_code == 200:
+                results.append(Result(True, assignment, "Status code was 200"))
+            else:
+                results.append(Result(False, assignment, "Status code was not 200. Was " + str(r.status_code)))
+
+            # ta returned na contain to hashtag oposdipote
+            r = requests.get(Settings.ws_conn_string + '/tweets/hashtag/' + hashtag)
+            mapped_json = json.loads(r.content)
+            results.append(Result(True, assignment + ' all contain', 'All returned tweets contained the requested tag'))
+            for m in mapped_json:
+                tags = m['entities']['hashtags']
+                failed = True
+                for t in tags:
+                    if t['text'] == hashtag:
+                        failed = False
+                if failed:
+                    results.pop()
+                    results.append(Result(True, assignment + ' all contain',
+                                          'Not all returned tweets contained the requested tag'))
+                    break
+
+            # to count tis db na einai idio me to returned count
+            r = requests.get(Settings.ws_conn_string + '/tweets/hashtag/' + hashtag)
+            mapped_json_count = len(json.loads(r.content))
+            db_count = db.find_with_hashtags(hashtag).count()
+            if mapped_json_count == db_count:
+                results.append(Result(True, assignment + ' hashtag count db',
+                                      'Your service retured the correct amount of tweets'))
+            else:
+                results.append(
+                    Result(False, assignment + ' hashtag count db',
+                           'Your service did not return the correct amount of tweets.' +
+                           ' Correct: ' + str(db_count) + ", Yours: " + str(len(mapped_json))))
+
+        except requests.exceptions.RequestException as e:
+            logger.warn(e)
+            results.append(Result(False, assignment, e))
+
+        return results
+
     def get_full_tweet_text(self, tweet_map):
         text = ""
         if "extended_tweet" in tweet_map:

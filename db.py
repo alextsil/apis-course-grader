@@ -13,3 +13,6 @@ class Db:
 
     def find_with_hashtags_more_than(self, more_than):
         return self.db.find({('entities.hashtags.' + str(more_than)): {'$exists': True}})
+
+    def find_with_hashtags(self, hashtag):
+        return self.db.find({'entities.hashtags.text': hashtag})
