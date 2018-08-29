@@ -45,7 +45,7 @@ class GradingTests:
 
         except requests.exceptions.RequestException as e:
             logger.warn(e)
-            results.append(Result(False, assignment, e))
+            results.append(Result(False, assignment, str(e)))
 
         return results
 
@@ -98,7 +98,7 @@ class GradingTests:
 
         except requests.exceptions.RequestException as e:
             logger.warn(e)
-            results.append(Result(False, assignment, e))
+            results.append(Result(False, assignment, str(e)))
 
         return results
 
@@ -146,7 +146,7 @@ class GradingTests:
 
         except requests.exceptions.RequestException as e:
             logger.warn(e)
-            results.append(Result(False, assignment, e))
+            results.append(Result(False, assignment, str(e)))
 
         return results
 
@@ -192,7 +192,7 @@ class GradingTests:
 
         except requests.exceptions.RequestException as e:
             logger.warn(e)
-            results.append(Result(False, assignment, e))
+            results.append(Result(False, assignment, str(e)))
 
         return results
 
@@ -201,33 +201,37 @@ class GradingTests:
         assignment = 'Process a simple POST request'
 
         in_params = {'user': 'alex', 'message': 'o hai', 'age': '26'}
+        try:
+            r = requests.post(Settings.ws_conn_string + '/post', json=in_params)
+            if r.status_code == 201:
+                results.append(Result(True, assignment, "Status code was 201"))
+            else:
+                results.append(Result(False, assignment, "Status code was not 201. Was " + str(r.status_code)))
 
-        r = requests.post(Settings.ws_conn_string + '/post', json=in_params)
-        if r.status_code == 201:
-            results.append(Result(True, assignment, "Status code was 201"))
-        else:
-            results.append(Result(False, assignment, "Status code was not 201. Was " + str(r.status_code)))
-
-        # returned dict is same as input dict
-        if len(r.json()) == 3 and 'user' in r.json() and 'message' in r.json() and 'age' in r.json():
-            if r.json()['user'] == in_params['user'] and r.json()['user'] == in_params['user'] \
-                    and r.json()['user'] == in_params['user']:
-                results.append(Result(True, assignment + ' dict check', "Response json was correct"))
+            # returned dict is same as input dict
+            if len(r.json()) == 3 and 'user' in r.json() and 'message' in r.json() and 'age' in r.json():
+                if r.json()['user'] == in_params['user'] and r.json()['user'] == in_params['user'] \
+                        and r.json()['user'] == in_params['user']:
+                    results.append(Result(True, assignment + ' dict check', "Response json was correct"))
+                else:
+                    results.append(
+                        Result(False, assignment + ' dict check', "Response json was incorrect. Actual: " + r.json()))
             else:
                 results.append(
                     Result(False, assignment + ' dict check', "Response json was incorrect. Actual: " + r.json()))
-        else:
-            results.append(
-                Result(False, assignment + ' dict check', "Response json was incorrect. Actual: " + r.json()))
 
-        # missing input values
-        bad_in_params = {'asdf': 'alex', 'message': 'o hai', 'age': '26'}
-        r = requests.post(Settings.ws_conn_string + '/post', json=bad_in_params)
-        if r.status_code == 400:
-            results.append(Result(True, assignment + ' bad input', "Status code was 400"))
-        else:
-            results.append(
-                Result(False, assignment + ' bad input', "Status code was not 400. Was " + str(r.status_code)))
+            # missing input values
+            bad_in_params = {'asdf': 'alex', 'message': 'o hai', 'age': '26'}
+            r = requests.post(Settings.ws_conn_string + '/post', json=bad_in_params)
+            if r.status_code == 400:
+                results.append(Result(True, assignment + ' bad input', "Status code was 400"))
+            else:
+                results.append(
+                    Result(False, assignment + ' bad input', "Status code was not 400. Was " + str(r.status_code)))
+
+        except requests.exceptions.RequestException as e:
+            logger.warn(e)
+            results.append(Result(False, assignment, str(e)))
 
         return results
 
