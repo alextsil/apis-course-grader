@@ -152,7 +152,7 @@ class GradingTests:
 
     def delete_all_with_hashtag(self):
         results = []
-        hashtag = 'tsikos'
+        hashtag = 'deniparxei'
         assignment = 'Delete request on /tweets/hashtag/{tag} using tag "' + hashtag + '"'
 
         try:

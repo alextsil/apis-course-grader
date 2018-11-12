@@ -18,4 +18,4 @@ for r in res_list:
     if r.result:
         true_count += 1
 
-print("\033[92mPassed\033[0m tests: " + str(true_count) + '/' + str(len(res_list)))
+print("Passed tests: " + str(true_count) + '/' + str(len(res_list)))
